@@ -3,7 +3,7 @@ import math
 import operator as op
 from functools import reduce
 from time import time
-
+import decimal
 
 def ncr(n, r):
     r = min(r, n-r)
@@ -33,7 +33,7 @@ def safety_of_consensus(a, max_of_validator, num_of_nodes):
             x = x_values.get(i) if x_values.get(i) else ncr(int(num_of_nodes * a / 100), i)
             y = y_values.get(m - i) if y_values.get(m - i) else ncr(int(num_of_nodes * (1 - (a / 100))), m - i)
             z = z_values.get(m) if z_values.get(m) else ncr(num_of_nodes, m)
-
+            # print('Compare {0} with {1}'.format(int((int(num_of_nodes * a / 100 - i-1) / i) * x_values.get(i - 1)) , ncr(int(num_of_nodes * a / 100), i))) if x_values.get(i-1) else ncr(int(num_of_nodes * a / 100), i)
             x_values.update({i: x})
             y_values.update({m - i: y})
             z_values.update({m: z})
@@ -60,7 +60,7 @@ def possibility_of_propagation(p, max_of_validator, num_of_nodes):
         sum = 0
         # print((1 - (p / 100)))
         # exit(9)
-        for j in range(math.ceil(m / 3), int(min(m, num_of_nodes * (1 - (p / 100))))+1):
+        for j in range(math.ceil(m / 4), int(min(m, num_of_nodes * (1 - (p / 100))))+1):
             x = x_values.get(m - j) if x_values.get(m - j-1) else ncr(int(num_of_nodes * p / 100), m - j)
             y = y_values.get(j) if y_values.get(j-1) else ncr(int(num_of_nodes * (1 - (p / 100))), j)
             z = z_values.get(m)if z_values.get(m-1) else ncr(num_of_nodes, m)
@@ -75,25 +75,29 @@ def possibility_of_propagation(p, max_of_validator, num_of_nodes):
 
 if __name__=='__main__':
 
-    # n_list = [1000]
+    n_list = [1000,10000,100000,1000000]
 
-    n_list = [int(input('Enter entire nodes number : '))]
+    # n_list = [int(input('Enter entire nodes number : '))]
     # rate of attacker
     a = 10
     # rate of propagation per second
     p = 75
 
     # half value for grid
-    # half_of_nodes_list = int(len(n_list) / 2)
+    half_of_nodes_list = int(len(n_list) / 2)
+
     #looping different nodes case
     for idx, n in enumerate(n_list):
-        max_of_validator = range(3, n+1)
+        # max_of_validator = range(1, int(4*a*n/100))
+        max_of_validator = range(1, n+1)
         # extend value of safety
-        # plt.subplot(half_of_nodes_list, half_of_nodes_list, idx+1)
+        plt.subplot(half_of_nodes_list, half_of_nodes_list, idx+1)
+
         plt.title('Safety of consensus [node : {0}]'.format(n))
         plt.ylabel('Percentage of Safety [result]')
         plt.xlabel('Number of validator [m]')
         safety = safety_of_consensus(a, max_of_validator, n)
+
         plt.plot(max_of_validator, safety)
 
     # for idx, n in enumerate(n_list):
