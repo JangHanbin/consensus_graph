@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import math
 import operator as op
 from decimal import *
+from multiprocessing import Pool
 import matplotlib.patches as mpatches
 
 from functools import reduce
@@ -56,7 +57,6 @@ def safety_of_consensus(a, max_of_validator, num_of_nodes):
 
     return results
 
-
 def possibility_of_propagation(p, max_of_validator, num_of_nodes):
 
     results = list()
@@ -67,37 +67,8 @@ def possibility_of_propagation(p, max_of_validator, num_of_nodes):
     for m in max_of_validator:
         sum = 0
         print('{0} of {1} processing in Propagation[{2}] \r'.format(m, max(max_of_validator),p),end='')
+
         for i in range(math.ceil(m / 4), int(min(m, num_of_nodes * (1 - (p / 100))))+1):
-            #
-            # x = int()
-            # y = int()
-            # z = int()
-            # if x_values.get(m-i) :
-            #     x = x_values.get(m-i)
-            # elif x_values.get((m-i)-1) :
-            #     n = int(num_of_nodes * p / 100) -1
-            #     r = (m-i)-1
-            #     pre_cnr = x_values.get(r)
-            #     x = (n - r) / (r + 1) * pre_cnr
-            #     print(int(x))
-            #     print(ncr(int(num_of_nodes * p / 100), m - i))
-            # else:
-            #     x = ncr(int(num_of_nodes * p / 100), m - i)
-            #
-            # if y_values.get(i):
-            #     y = y_values.get(i)
-            # elif y_values.get(i-1):
-            #     n = int(num_of_nodes * (1 - (p / 100))) -1
-            #     y = (((int(num_of_nodes * (1 - (p / 100)))-1) - (i-1)) / i) * y_values.get(i-1)
-            # else:
-            #     y = ncr(int(num_of_nodes * (1 - (p / 100))), i)
-            #
-            # if z_values.get(m):
-            #     z = z_values.get(m)
-            # elif z_values.get(m-1):
-            #     z = ((num_of_nodes-1) - (m-1)) / m *  z_values.get(m-1)
-            # else:
-            #     z = ncr(num_of_nodes, m)
             x = x_values.get(m - i) if x_values.get(m - i) else ncr(int(num_of_nodes * p / 100), m - i)
             y = y_values.get(i) if y_values.get(i) else ncr(int(num_of_nodes * (1 - (p / 100))), i)
             z = z_values.get(m) if z_values.get(m) else ncr(num_of_nodes, m)
@@ -174,7 +145,7 @@ if __name__=='__main__':
     results = list()
     # results.append([(a/100*b/100)*100 for a, b in zip(safety,possibility)] for possibility in possibilities)
     for possibility in possibilities:
-        results.append([(a / 100 * b / 100) * 100 for a, b in zip(safety, possibility)])
+        results.append([(Decimal(a) / 100 * Decimal(b) / 100) * 100 for a, b in zip(safety, possibility)])
 
     plt.ylabel('Safety [%]')
     plt.xlabel('Number of miners')
