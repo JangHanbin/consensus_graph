@@ -95,9 +95,9 @@ if __name__=='__main__':
     # rate of attacker
     a = 10
     # rate of propagation
-    # p_list = [32, 60, 74, 80]
+    p_list = [32, 60, 74, 80]
 
-    p_list = [75,80]
+    # p_list = [75,80]
     # ps = [75]
     max_of_validator = range(1, n + 1)
     plt.grid(True)
