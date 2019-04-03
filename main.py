@@ -1,16 +1,32 @@
 import matplotlib.pyplot as plt
 import math
 import operator as op
+from decimal import *
+import matplotlib.patches as mpatches
+
 from functools import reduce
-from time import time
-import decimal
+from xls_saver import ExcelSaver
+
+COUNT = 0
 
 def ncr(n, r):
     r = min(r, n-r)
     numer = reduce(op.mul, range(n, n-r, -1), 1)
     denom = reduce(op.mul, range(1, r+1), 1)
-
+    global COUNT
     return int(numer // denom)
+
+def confirm(q, z):
+    p = 1.0 - q
+    lam = z * (q / p)
+    sum = 1.0
+    for k in range(0, z+1):
+        poisson = math.exp(-lam)
+        for i in range(1, k+1):
+            poisson *= lam / i
+        sum -= poisson * (1 - math.pow(q / p, z - k))
+
+    return (1 - sum) * 100
 
 
 def safety_of_consensus(a, max_of_validator, num_of_nodes):
@@ -19,33 +35,24 @@ def safety_of_consensus(a, max_of_validator, num_of_nodes):
     y_values = dict()
     z_values = dict()
 
-    start_time = time()
     for m in max_of_validator:
         sum = 0
         for i in range(math.ceil(m / 4), int(min(m, num_of_nodes * a / 100)) + 1):
-            # Before
-            # x = ncr(int(num_of_nodes * a / 100), i)
-            # y = ncr(int(num_of_nodes * (1 - (a / 100))), m - i)
-            # z = ncr(num_of_nodes, m)
 
-            # After
             # if there is a pre value then use that nor calculate
             x = x_values.get(i) if x_values.get(i) else ncr(int(num_of_nodes * a / 100), i)
             y = y_values.get(m - i) if y_values.get(m - i) else ncr(int(num_of_nodes * (1 - (a / 100))), m - i)
             z = z_values.get(m) if z_values.get(m) else ncr(num_of_nodes, m)
-            # print('Compare {0} with {1}'.format(int((int(num_of_nodes * a / 100 - i-1) / i) * x_values.get(i - 1)) , ncr(int(num_of_nodes * a / 100), i))) if x_values.get(i-1) else ncr(int(num_of_nodes * a / 100), i)
             x_values.update({i: x})
             y_values.update({m - i: y})
             z_values.update({m: z})
 
-            #calculate
             result = x * y / z
             sum += result
-        # insert by percentage of safety
-        results.append((1 - sum) * 100)
 
-    end_time = time()
-    print('processing time : {0}'.format(end_time-start_time))
+        # insert by percentage of safety
+
+        results.append((1 - sum) * 100)
 
     return results
 
@@ -56,67 +63,166 @@ def possibility_of_propagation(p, max_of_validator, num_of_nodes):
     x_values = dict()
     y_values = dict()
     z_values = dict()
+
     for m in max_of_validator:
         sum = 0
-        # print((1 - (p / 100)))
-        # exit(9)
-        for j in range(math.ceil(m / 4), int(min(m, num_of_nodes * (1 - (p / 100))))+1):
-            x = x_values.get(m - j) if x_values.get(m - j-1) else ncr(int(num_of_nodes * p / 100), m - j)
-            y = y_values.get(j) if y_values.get(j-1) else ncr(int(num_of_nodes * (1 - (p / 100))), j)
-            z = z_values.get(m)if z_values.get(m-1) else ncr(num_of_nodes, m)
-            result = x * y / z
+        print('{0} of {1} processing in Propagation[{2}] \r'.format(m, max(max_of_validator),p),end='')
+        for i in range(math.ceil(m / 4), int(min(m, num_of_nodes * (1 - (p / 100))))+1):
+            #
+            # x = int()
+            # y = int()
+            # z = int()
+            # if x_values.get(m-i) :
+            #     x = x_values.get(m-i)
+            # elif x_values.get((m-i)-1) :
+            #     n = int(num_of_nodes * p / 100) -1
+            #     r = (m-i)-1
+            #     pre_cnr = x_values.get(r)
+            #     x = (n - r) / (r + 1) * pre_cnr
+            #     print(int(x))
+            #     print(ncr(int(num_of_nodes * p / 100), m - i))
+            # else:
+            #     x = ncr(int(num_of_nodes * p / 100), m - i)
+            #
+            # if y_values.get(i):
+            #     y = y_values.get(i)
+            # elif y_values.get(i-1):
+            #     n = int(num_of_nodes * (1 - (p / 100))) -1
+            #     y = (((int(num_of_nodes * (1 - (p / 100)))-1) - (i-1)) / i) * y_values.get(i-1)
+            # else:
+            #     y = ncr(int(num_of_nodes * (1 - (p / 100))), i)
+            #
+            # if z_values.get(m):
+            #     z = z_values.get(m)
+            # elif z_values.get(m-1):
+            #     z = ((num_of_nodes-1) - (m-1)) / m *  z_values.get(m-1)
+            # else:
+            #     z = ncr(num_of_nodes, m)
+            x = x_values.get(m - i) if x_values.get(m - i) else ncr(int(num_of_nodes * p / 100), m - i)
+            y = y_values.get(i) if y_values.get(i) else ncr(int(num_of_nodes * (1 - (p / 100))), i)
+            z = z_values.get(m) if z_values.get(m) else ncr(num_of_nodes, m)
+            x_values.update({m-i: x})
+            y_values.update({i: y})
+            z_values.update({m: z})
+            getcontext().prec = 8
+
+            result = Decimal(x) * Decimal(y) / Decimal(z)
+
+
             sum += result
 
         # insert by percentage of possibility
-        results.append((sum) * 100)
+        results.append((1 - sum) * 100)
+        # print('Possiblilty of propagation x = {0} y = {1}'.format(m, (1 - sum) * 100))
 
     return results
 
 
 if __name__=='__main__':
 
-    n_list = [1000,10000,100000,1000000]
-
-    # n_list = [int(input('Enter entire nodes number : '))]
+    n = 8954
     # rate of attacker
     a = 10
-    # rate of propagation per second
-    p = 75
+    # rate of propagation
+    # p_list = [32, 60, 74, 80]
 
-    # half value for grid
-    half_of_nodes_list = int(len(n_list) / 2)
+    p_list = [75,80]
+    # ps = [75]
+    max_of_validator = range(1, n + 1)
+    plt.grid(True)
+    colors = ['#C80000', '#001EFF', '#FFE600', '#00C800']
 
-    #looping different nodes case
-    for idx, n in enumerate(n_list):
-        # max_of_validator = range(1, int(4*a*n/100))
-        max_of_validator = range(1, n+1)
-        # extend value of safety
-        plt.subplot(half_of_nodes_list, half_of_nodes_list, idx+1)
 
-        plt.title('Safety of consensus [node : {0}]'.format(n))
-        plt.ylabel('Percentage of Safety [result]')
-        plt.xlabel('Number of validator [m]')
-        safety = safety_of_consensus(a, max_of_validator, n)
+    # Safety
+    safety = safety_of_consensus(a, max_of_validator, n)
+    plt.ylabel('Safety [%]')
+    plt.xlabel('Number of miners')
 
-        plt.plot(max_of_validator, safety)
+    # draw main line
+    # plt.plot(max_of_validator, safety, c='k')
+    # print('Safety of consensus')
+    # for idx, i in enumerate(p_list):
+    #     i= i/100
+    #     x = int(i*max(max_of_validator))
+    #     y = int(safety[int(i*max(max_of_validator))])
+    #     plt.plot(x, y ,linestyle=None, ms=15, c=colors[idx], marker='*')
+        # plt.annotate('({0}, {1})'.format(x,y), xy=(x,y), xytext=(x-700, y-(2*idx)))
 
-    # for idx, n in enumerate(n_list):
-    #     # m must be smaller than 0.99 * n
-    #     max_of_validator = range(1, int(0.75 * n)+1)
-    #     # extend value of safety
-    #     # plt.subplot(half_of_nodes_list, half_of_nodes_list, idx+1)
-    #     # plt.title('Possibility of Propagation [node : {0}]'.format(n))
-    #     # plt.ylabel('Percentage of Safety [result]')
-    #     # plt.xlabel('Number of validator [m]')
-    #     possibility=possibility_of_propagation(p, max_of_validator, n)
-    #     # plt.plot(max_of_validator,possibility_of_propagation())
-    #
-    # plt.title('Total [node : {0}]'.format(n))
-    # plt.ylabel('Total Safety [result]')
-    # plt.xlabel('Number of validator [m]')
-    # plt.plot(max_of_validator, [a*b for a,b in zip(safety,possibility)])
-    #
 
+
+
+
+    # propagation
+    possibilities=list()
+    # plt.ylabel('Safety [%]')
+    # plt.xlabel('Number of miners')
+    for idx, p in enumerate(p_list):
+        possibility=possibility_of_propagation(p, max_of_validator, n)
+        possibilities.append(possibility)
+    #     # draw propagation
+    #     plt.plot(max_of_validator, possibility, c=colors[idx], label='{0}%'.format(p))
+
+    # for idx, possibility in enumerate(possibilities) :
+    #     plt.plot(max_of_validator, possibility, c=colors[idx], )
+
+
+
+    # plt.plot(int(0.8*max(max_of_validator)),possibility[int(0.8*max(max_of_validator))],ms=15, c='#ffe600', marker='*')
+
+
+    # Total result
+    results = list()
+    # results.append([(a/100*b/100)*100 for a, b in zip(safety,possibility)] for possibility in possibilities)
+    for possibility in possibilities:
+        results.append([(a / 100 * b / 100) * 100 for a, b in zip(safety, possibility)])
+
+    plt.ylabel('Safety [%]')
+    plt.xlabel('Number of miners')
+
+    # draw each graph
+    for result, color, p in zip(results, colors, p_list) :
+        # draw main graph as each color
+        excelSaver = ExcelSaver('Total_value_node_{0}_propagation_{1}.xlsx'.format(max(max_of_validator),p))
+        excelSaver.save_to_file(max_of_validator, result)
+        plt.plot(max_of_validator,result, c=color)
+        p = p /100
+        # draw star at each p
+        plt.plot(int(p*max(max_of_validator)), result[int(p*max(max_of_validator))], linestyle=None, ms=15, c=color, marker='*')
+        # point of star
+        print('{2} : x = {0}, y = {1}'.format(p, int(p*max(max_of_validator)),result[int(p*max(max_of_validator))] ))
+        # To find 99.97 safety by confirm
+        q = 1 - (result[int(p*max(max_of_validator))] / 100)
+        for z in range(0,100):
+            if 99.97 < confirm(q=q, z=z):
+                print('Z : {0} value = {1}'.format(z,confirm(q=q, z=z)))
+                break
+
+    # plt.title('Confirm')
+    # plt.ylabel('Value [%]')
+    # plt.xlabel('Number of Confirms')
+    # plt.plot(max_of_vali
+    # dator, results)
+
+    # confirms = list()
+
+
+    propa_result = list()
+
+
+
+
+
+    # plt.ylabel('Safety [%]')
+    # plt.xlabel('Number of confirms')
+    # plt.plot(range(0,10+1), confirms, c='#C80000',ls='--',marker='o')
+    # plt.plot(1, confirms[1],ms=15, c='#ffe600', marker='*')
+    # plt.plot(6, confirms[6], ms=15, c='#ffe600', marker='*')
+
+    # paches = list()
+    # for color, p in zip(colors, p_list):
+    #     paches.append(mpatches.Patch(color=color, label='{0}%'.format(p)))
+    # plt.legend(loc=4, handles=paches)
+    # plt.legend(handles=[red_patch])
     plt.show()
 
 
