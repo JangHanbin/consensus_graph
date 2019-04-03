@@ -18,14 +18,15 @@ def ncr(n, r):
     return int(numer // denom)
 
 def confirm(q, z):
-    p = 1.0 - q
+
+    p = Decimal(1.0) - q
     lam = z * (q / p)
-    sum = 1.0
+    sum = Decimal(1.0)
     for k in range(0, z+1):
-        poisson = math.exp(-lam)
+        poisson = Decimal(math.exp(-lam))
         for i in range(1, k+1):
-            poisson *= lam / i
-        sum -= poisson * (1 - math.pow(q / p, z - k))
+            poisson *= Decimal(lam / i)
+        sum -= poisson * Decimal(1 - math.pow(q / p, z - k))
 
     return (1 - sum) * 100
 
@@ -97,8 +98,7 @@ if __name__=='__main__':
     # rate of propagation
     p_list = [32, 60, 74, 80]
 
-    # p_list = [75,80]
-    # ps = [75]
+    # p_list = [75]
     max_of_validator = range(1, n + 1)
     plt.grid(True)
     colors = ['#C80000', '#001EFF', '#FFE600', '#00C800']
