@@ -2,13 +2,12 @@ import matplotlib.pyplot as plt
 import math
 import operator as op
 from decimal import *
-from multiprocessing import Pool
-import matplotlib.patches as mpatches
-
+from multiprocessing import Process, Manager, current_process
 from functools import reduce
 from xls_saver import ExcelSaver
 
-COUNT = 0
+
+getcontext().prec = 8
 
 def ncr(n, r):
     r = min(r, n-r)
@@ -18,7 +17,6 @@ def ncr(n, r):
     return int(numer // denom)
 
 def confirm(q, z):
-
     p = Decimal(1.0) - q
     lam = z * (q / p)
     sum = Decimal(1.0)
@@ -58,8 +56,9 @@ def safety_of_consensus(a, max_of_validator, num_of_nodes):
 
     return results
 
-def possibility_of_propagation(p, max_of_validator, num_of_nodes):
+def possibility_of_propagation(p, max_of_validator, num_of_nodes, idx, ret_dict):
 
+    print('Process {0}, P : {1}'.format(current_process(), p))
     results = list()
     x_values = dict()
     y_values = dict()
@@ -76,7 +75,6 @@ def possibility_of_propagation(p, max_of_validator, num_of_nodes):
             x_values.update({m-i: x})
             y_values.update({i: y})
             z_values.update({m: z})
-            getcontext().prec = 8
 
             result = Decimal(x) * Decimal(y) / Decimal(z)
 
@@ -86,7 +84,9 @@ def possibility_of_propagation(p, max_of_validator, num_of_nodes):
         # insert by percentage of possibility
         results.append((1 - sum) * 100)
         # print('Possiblilty of propagation x = {0} y = {1}'.format(m, (1 - sum) * 100))
-
+    print()
+    ret_dict[idx] = results.copy()
+    # ret_dict.append(results.copy())
     return results
 
 
@@ -98,7 +98,6 @@ if __name__=='__main__':
     # rate of propagation
     p_list = [32, 60, 74, 80]
 
-    # p_list = [75]
     max_of_validator = range(1, n + 1)
     plt.grid(True)
     colors = ['#C80000', '#001EFF', '#FFE600', '#00C800']
@@ -124,28 +123,46 @@ if __name__=='__main__':
 
 
     # propagation
-    possibilities=list()
+    possibilities=Manager().dict()
     # plt.ylabel('Safety [%]')
     # plt.xlabel('Number of miners')
+    procs = list()
+
+    # for multiprocessing
     for idx, p in enumerate(p_list):
-        possibility=possibility_of_propagation(p, max_of_validator, n)
-        possibilities.append(possibility)
+        proc = Process(target=possibility_of_propagation, args=(p, max_of_validator, n, idx, possibilities))
+        procs.append(proc)
+        proc.start()
+
+        # possibility=possibility_of_propagation(p, max_of_validator, n)
+        # possibilities.append(possibility)
+
+    # wating for proc
+    for proc in procs:
+        proc.join()
+
+
+
+
     #     # draw propagation
     #     plt.plot(max_of_validator, possibility, c=colors[idx], label='{0}%'.format(p))
 
     # for idx, possibility in enumerate(possibilities) :
     #     plt.plot(max_of_validator, possibility, c=colors[idx], )
 
-
-
     # plt.plot(int(0.8*max(max_of_validator)),possibility[int(0.8*max(max_of_validator))],ms=15, c='#ffe600', marker='*')
 
 
     # Total result
     results = list()
+    for idx in range(0,len(p_list)):
+        results.append([(Decimal(a) / 100 * Decimal(b) / 100) * 100 for a, b in zip(safety, possibilities[idx])])
     # results.append([(a/100*b/100)*100 for a, b in zip(safety,possibility)] for possibility in possibilities)
-    for possibility in possibilities:
-        results.append([(Decimal(a) / 100 * Decimal(b) / 100) * 100 for a, b in zip(safety, possibility)])
+    # possibilities results order can be changed by process so that reorder by seq
+
+
+    # for possibility in possibilities:
+    #     results.append([(Decimal(a) / 100 * Decimal(b) / 100) * 100 for a, b in zip(safety, possibility)])
 
     plt.ylabel('Safety [%]')
     plt.xlabel('Number of miners')
@@ -158,11 +175,11 @@ if __name__=='__main__':
         plt.plot(max_of_validator,result, c=color)
         p = p /100
         # draw star at each p
-        plt.plot(int(p*max(max_of_validator)), result[int(p*max(max_of_validator))], linestyle=None, ms=15, c=color, marker='*')
+        plt.plot(int(p*max(max_of_validator)), result[int(p*max(max_of_validator))-1], linestyle=None, ms=15, c=color, marker='*')
         # point of star
-        print('{2} : x = {0}, y = {1}'.format(p, int(p*max(max_of_validator)),result[int(p*max(max_of_validator))] ))
+        print('{2} : x = {0}, y = {1}'.format( int(p*max(max_of_validator)),result[int(p*max(max_of_validator))-1], p ))
         # To find 99.97 safety by confirm
-        q = 1 - (result[int(p*max(max_of_validator))] / 100)
+        q = 1 - (result[int(p*max(max_of_validator))-1] / 100)
         for z in range(0,100):
             if 99.97 < confirm(q=q, z=z):
                 print('Z : {0} value = {1}'.format(z,confirm(q=q, z=z)))
@@ -178,8 +195,6 @@ if __name__=='__main__':
 
 
     propa_result = list()
-
-
 
 
 
