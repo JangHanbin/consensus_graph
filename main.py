@@ -29,7 +29,7 @@ def confirm(q, z):
     return (1 - sum) * 100
 
 
-def safety_of_consensus(a, max_of_validator, num_of_nodes):
+def safety_of_consensus(a, max_of_validator, num_of_nodes, safeties):
     results = list()
     x_values = dict()
     y_values = dict()
@@ -70,6 +70,7 @@ def safety_of_consensus(a, max_of_validator, num_of_nodes):
         # print((1 - sum) * 100)
         # print('m[{0}] = {1},'.format(m,float((1- sum) * 100)))
     print()
+    safeties[a] = results.copy()
     return results
 
 
@@ -120,15 +121,24 @@ def compute_attacker_range(p_list, a):
     return a_list.copy()
 
 
-def compute_safeties_by_list(a_list):
-    safeties = list()
+def compute_safeties_by_list(a_list, max_of_validator, n):
+    safeties = Manager().dict()
+    procs = list()
 
     for a_ in a_list:
-        tmp = list()
+        # tmp = list()
         for a in a_:
-            safety = safety_of_consensus(a, max_of_validator, n)
-            tmp.append(safety.copy())
-        safeties.append(tmp)
+            proc = Process(target=safety_of_consensus, args=(a, max_of_validator, n, safeties))
+            procs.append(proc)
+            proc.start()
+            # safety = safety_of_consensus(a, max_of_validator, n, safeties)
+            # tmp.append(safety.copy())
+        # safeties.append(tmp)
+
+        # wating for proc
+        for proc in procs:
+            proc.join()
+
 
     return safeties.copy()
 
@@ -147,21 +157,17 @@ if __name__=='__main__':
     plt.grid(True)
     colors = ['#C80000', '#001EFF', '#FFE600', '#00C800']
 
-    a_list = compute_attacker_range(p_list, a)
 
     # Safety
-    safeties = compute_safeties_by_list(a_list)
+    a_list = compute_attacker_range(p_list, a)
+    safeties = compute_safeties_by_list(a_list, max_of_validator, n)
 
-    # for safety in safeties:
-    #     print(safety)
-    #
-    # print('\n\n\n\n')
+    # print(safeties)
     # SAVE AND DRAW VALUES
-    for _a, _s in zip(a_list, safeties) :
-        for a, safety in zip(_a, _s):
-            plt.plot(max_of_validator, safety)
-            excelSaver = ExcelSaver('safety_value_node_{0}_propagation_{1}.xlsx'.format(max(max_of_validator), a))
-            excelSaver.save_to_file(max_of_validator, safety)
+    for a, safety in safeties.items():
+        plt.plot(max_of_validator, safety)
+        excelSaver = ExcelSaver('safety_node[{0}]_attacker[{1}].xlsx'.format(max(max_of_validator), a))
+        excelSaver.save_to_file(max_of_validator, safety)
 
     plt.ylabel('Safety [%]')
     plt.xlabel('Number of miners')
