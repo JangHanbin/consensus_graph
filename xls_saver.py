@@ -23,3 +23,20 @@ class ExcelSaver:
 
 
         wb.save(self.file_name)
+
+class ExcelReader:
+    def __init__(self, file_name):
+        self.name = file_name
+
+    def read_from_file(self):
+        document = load_workbook(self.name, data_only=True)
+        sheet = document['values_of_consensus']
+
+        all_values = list()
+        for row in sheet.rows:
+            row_value = list()
+            for cell in row:
+                row_value.append(cell.value)
+            all_values.append(row_value)
+
+        return all_values.copy()

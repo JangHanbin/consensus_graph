@@ -5,7 +5,7 @@ from decimal import *
 from multiprocessing import Process, Manager, current_process
 from functools import reduce
 import time
-from xls_saver import ExcelSaver
+from xls_saver import ExcelSaver, ExcelReader
 
 
 getcontext().prec = 8
@@ -148,11 +148,40 @@ def compute_safeties_by_list(a_list, max_of_validator, n):
     return safeties.copy()
 
 
+def merge_by_propagtions(a_list, p_list):
+
+    for _a, p in zip(a_list,p_list):
+        list_of_datas = dict()
+        for a in _a:
+            excelReader = ExcelReader('safety_node[{0}]_attacker[{1}].xlsx'.format(max(max_of_validator), a))
+            results = excelReader.read_from_file()
+            for result in results:
+                # extract field
+                for x, x_per, y in zip(result[0::3], result[1::3], result[2::3]):
+                    # ignore comment field
+                    if type(x)!= int:
+                        continue
+                    list_of_datas.setdefault(x,[]).append(y)
+
+        # cal average
+        average = list()
+        for x, _y in list_of_datas.items():
+            aver= Decimal(reduce(lambda x, y: x + y, _y))  / Decimal(len(_y))
+            # ignore float calculate error
+            if aver < 0 and aver > -1:
+                aver=0
+            average.append(aver)
+
+        excelSaver = ExcelSaver('total_safety_node[{0}]_propagation[{1}].xlsx'.format(max(max_of_validator), p))
+        excelSaver.save_to_file(max_of_validator, average)
+
+
+    return
 if __name__=='__main__':
 
     start_time = time.time()
     n = 8954
-    # n = 1000
+    # n = 100
     # rate of attacker
     a = 10
     # rate of propagation
@@ -180,6 +209,9 @@ if __name__=='__main__':
         excelSaver = ExcelSaver('safety_node[{0}]_attacker[{1}].xlsx'.format(max(max_of_validator), a))
         excelSaver.save_to_file(max_of_validator, safety)
 
+
+    merge_by_propagtions(a_list, p_list)
+
     #
     # print(safeties)
     # for _a in zip(a_list):
@@ -188,7 +220,7 @@ if __name__=='__main__':
     #         print(safeties[_a][idx])
     plt.ylabel('Safety [%]')
     plt.xlabel('Number of miners')
-    plt.legend(loc=4)
+    # plt.legend(loc=4)
     plt.show()
 
     end_time = time.time()
