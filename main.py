@@ -135,8 +135,8 @@ def compute_safeties_by_list(a_list):
 
 if __name__=='__main__':
 
-    # n = 8954
-    n = 100
+    n = 8954
+    # n = 100
     # rate of attacker
     a = 10
     # rate of propagation
