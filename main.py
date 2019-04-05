@@ -151,8 +151,8 @@ def compute_safeties_by_list(a_list, max_of_validator, n):
 if __name__=='__main__':
 
     start_time = time.time()
-    # n = 8954
-    n = 1000
+    n = 8954
+    # n = 1000
     # rate of attacker
     a = 10
     # rate of propagation
