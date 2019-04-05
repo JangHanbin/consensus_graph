@@ -4,6 +4,7 @@ import operator as op
 from decimal import *
 from multiprocessing import Process, Manager, current_process
 from functools import reduce
+import time
 from xls_saver import ExcelSaver
 
 
@@ -34,34 +35,44 @@ def safety_of_consensus(a, max_of_validator, num_of_nodes, safeties):
     x_values = dict()
     y_values = dict()
     z_values = dict()
-    print('Process {0}, A : {1}'.format(current_process(), a))
+    # a = Decimal(a)
+    # print('Process {0}, A : {1}'.format(current_process(), a))
     for m in max_of_validator:
         sum = Decimal(0)
         print('{0} of {1} processing in Safety[{2}] \r'.format(m, max(max_of_validator), a), end='')
         for i in range(max(math.ceil(m / 4), round(m-(1-a/100)*n)), round(min(m, num_of_nodes * a / 100)) + 1):
             # if there is a pre value then use that nor calculate
+            # if is for avoid all kinda float calculate error
+
+            #
+            if round(num_of_nodes * a / 100) < i:
+                continue
             x = x_values.get(i) if x_values.get(i) else ncr(round(num_of_nodes * a / 100), i)
-            y = y_values.get(m - i) if y_values.get(m - i) else ncr(round(num_of_nodes * (1 - (a / 100))), m - i)
-            z = z_values.get(m) if z_values.get(m) else ncr(num_of_nodes, m)
             x_values.update({i: x})
+
+            if round(num_of_nodes * (1 - (a / 100))) < m - i:
+                continue
+            y = y_values.get(m - i) if y_values.get(m - i) else ncr(round(num_of_nodes * (1 - (a / 100))), m - i)
             y_values.update({m - i: y})
+            if num_of_nodes < m:
+                continue
+            z = z_values.get(m) if z_values.get(m) else ncr(num_of_nodes, m)
             z_values.update({m: z})
 
+
             result = Decimal(x) * Decimal(y) / Decimal(z)
-            # if a==68:
-            #     print('M : {0} I : {1}'.format(m,i))
-            #     print(int(m-(1-a/100)*n))
-            #     print(m - (1 - a / 100) * n)
-            #     print('{0} ncr {1} = {2}'.format(int(num_of_nodes * a / 100),i,x))
-            #     print('{0} ncr {1} = {2}'.format(int(num_of_nodes * (1 - (a / 100))), m-i, y))
-            #     print('{0} ncr {1} = {2}'.format(num_of_nodes, m, z))
-
             sum += result
-            # if a == 68:
+            # if m==8939 and a==75:
+            #     print('M : {0} I : {1}'.format(m,i))
+            #     print(round(m-(1-a/100)*n))
+            #     print(round(min(m, num_of_nodes * a / 100)) + 1)
+            #     # print(int(m-(1-a/100)*n))
+            #     # print(m - (1 - a / 100) * n)
+            #     print('{0} ncr {1} = {2}'.format(round(num_of_nodes * a / 100),i,x))
+            #     print('{0} ncr {1} = {2}'.format(round(num_of_nodes * (1 - (a / 100))), m-i, y))
+            #     print('{0} ncr {1} = {2}'.format(num_of_nodes, m, z))
             #     print(sum)
-            #     print()
-
-
+            #     print('\n\n')
 
         # insert by percentage of safety
         results.append((1- sum) * 100)
@@ -76,7 +87,7 @@ def safety_of_consensus(a, max_of_validator, num_of_nodes, safeties):
 
 def possibility_of_propagation(p, max_of_validator, num_of_nodes, idx, possibilities):
 
-    print('Process {0}, P : {1}'.format(current_process(), p))
+    # print('Process {0}, P : {1}'.format(current_process(), p))
     results = list()
     x_values = dict()
     y_values = dict()
@@ -139,8 +150,9 @@ def compute_safeties_by_list(a_list, max_of_validator, n):
 
 if __name__=='__main__':
 
+    start_time = time.time()
     # n = 8954
-    n = 100
+    n = 1000
     # rate of attacker
     a = 10
     # rate of propagation
@@ -151,6 +163,10 @@ if __name__=='__main__':
     plt.grid(True)
     colors = ['#C80000', '#001EFF', '#FFE600', '#00C800']
 
+    # test = Manager().dict()
+    # safety_of_consensus(75, max_of_validator, n, Manager().dict())
+    # print(test)
+    # exit(0)
 
     # Safety
     a_list = compute_attacker_range(p_list, a)
@@ -158,15 +174,26 @@ if __name__=='__main__':
 
     # SAVE AND DRAW VALUES
     for a, safety in safeties.items():
-        print('A : {0}, PERCENT : {1}'.format(a,safety[a-1]))
-        plt.plot(max_of_validator, safety)
+        # print('A : {0}, PERCENT : {1}'.format(a,safety[a-1]))
+        # print(a, safety)
+        plt.plot(max_of_validator, safety, label='Atacker {0}%'.format(a))
         excelSaver = ExcelSaver('safety_node[{0}]_attacker[{1}].xlsx'.format(max(max_of_validator), a))
         excelSaver.save_to_file(max_of_validator, safety)
 
+    #
+    # print(safeties)
+    # for _a in zip(a_list):
+    #     print(_a)
+    #     for a, idx in zip(_a, range(0, len(a_list))):
+    #         print(safeties[_a][idx])
     plt.ylabel('Safety [%]')
     plt.xlabel('Number of miners')
+    plt.legend(loc=4)
     plt.show()
 
+    end_time = time.time()
+
+    print('PROCESSING TIME : {0}'.format(end_time-start_time))
     exit(0)
 
     # ######################### Dont necessary anymore #########################
