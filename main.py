@@ -34,7 +34,7 @@ def safety_of_consensus(a, max_of_validator, num_of_nodes, safeties):
     x_values = dict()
     y_values = dict()
     z_values = dict()
-    print('Process {0}, A : {a}'.format(current_process(), p))
+    print('Process {0}, A : {1}'.format(current_process(), a))
     for m in max_of_validator:
         sum = Decimal(0)
         print('{0} of {1} processing in Safety[{2}] \r'.format(m, max(max_of_validator), a), end='')
@@ -139,8 +139,8 @@ def compute_safeties_by_list(a_list, max_of_validator, n):
 
 if __name__=='__main__':
 
-    n = 8954
-    # n = 100
+    # n = 8954
+    n = 100
     # rate of attacker
     a = 10
     # rate of propagation
@@ -158,6 +158,7 @@ if __name__=='__main__':
 
     # SAVE AND DRAW VALUES
     for a, safety in safeties.items():
+        print('A : {0}, PERCENT : {1}'.format(a,safety[a-1]))
         plt.plot(max_of_validator, safety)
         excelSaver = ExcelSaver('safety_node[{0}]_attacker[{1}].xlsx'.format(max(max_of_validator), a))
         excelSaver.save_to_file(max_of_validator, safety)
@@ -274,6 +275,7 @@ if __name__=='__main__':
     #     paches.append(mpatches.Patch(color=color, label='{0}%'.format(p)))
     # plt.legend(loc=4, handles=paches)
     # plt.legend(handles=[red_patch])
+
     plt.show()
 
 
