@@ -107,10 +107,36 @@ def possibility_of_propagation(p, max_of_validator, num_of_nodes, idx, possibili
     return results
 
 
+
+def compute_attacker_range(p_list, a):
+    a_list=list()
+
+    for p in p_list:
+        tmp = list()
+        for i in range(100-p, min(100-p+a+1,100)):
+            tmp.append(i)
+        a_list.append(tmp)
+
+    return a_list.copy()
+
+
+def compute_safeties_by_list(a_list):
+    safeties = list()
+
+    for a_ in a_list:
+        tmp = list()
+        for a in a_:
+            safety = safety_of_consensus(a, max_of_validator, n)
+            tmp.append(safety.copy())
+        safeties.append(tmp)
+
+    return safeties.copy()
+
+
 if __name__=='__main__':
 
-    n = 8954
-    # n = 100
+    # n = 8954
+    n = 100
     # rate of attacker
     a = 10
     # rate of propagation
@@ -121,37 +147,21 @@ if __name__=='__main__':
     plt.grid(True)
     colors = ['#C80000', '#001EFF', '#FFE600', '#00C800']
 
-    a_list=list()
-
-    #for
-    for p in p_list:
-        tmp = list()
-        for i in range(100-p, min(100-p+a+1,100)):
-            tmp.append(i)
-        a_list.append(tmp)
+    a_list = compute_attacker_range(p_list, a)
 
     # Safety
-    safeties = list()
-    for a_ in a_list:
-        for a in a_:
-            safety = safety_of_consensus(a, max_of_validator, n)
-            safeties.append(safety.copy())
-
-
-        # plt.plot(max_of_validator, safety)
+    safeties = compute_safeties_by_list(a_list)
 
     # for safety in safeties:
     #     print(safety)
-
-    # # for
-    for _a in a_list:
-        for a, safety in zip(_a, safeties):
+    #
+    # print('\n\n\n\n')
+    # SAVE AND DRAW VALUES
+    for _a, _s in zip(a_list, safeties) :
+        for a, safety in zip(_a, _s):
             plt.plot(max_of_validator, safety)
-            print(a , safety)
             excelSaver = ExcelSaver('safety_value_node_{0}_propagation_{1}.xlsx'.format(max(max_of_validator), a))
             excelSaver.save_to_file(max_of_validator, safety)
-
-
 
     plt.ylabel('Safety [%]')
     plt.xlabel('Number of miners')
