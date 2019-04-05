@@ -37,8 +37,8 @@ def safety_of_consensus(a, max_of_validator, num_of_nodes):
 
     for m in max_of_validator:
         sum = Decimal(0)
-        # int(max(math.ceil(m / 4), m-(1-(a/100))*num_of_nodes))
-        for i in range(max(math.ceil(m / 4), round(m-(1-a/100)*n)), int(min(m, num_of_nodes * a / 100)) + 1):
+        print('{0} of {1} processing in Safety[{2}] \r'.format(m, max(max_of_validator), a), end='')
+        for i in range(max(math.ceil(m / 4), round(m-(1-a/100)*n)), round(min(m, num_of_nodes * a / 100)) + 1):
             # if there is a pre value then use that nor calculate
             x = x_values.get(i) if x_values.get(i) else ncr(round(num_of_nodes * a / 100), i)
             y = y_values.get(m - i) if y_values.get(m - i) else ncr(round(num_of_nodes * (1 - (a / 100))), m - i)
@@ -69,11 +69,11 @@ def safety_of_consensus(a, max_of_validator, num_of_nodes):
         # print(int((Decimal(1) - sum)))
         # print((1 - sum) * 100)
         # print('m[{0}] = {1},'.format(m,float((1- sum) * 100)))
-
+    print()
     return results
 
 
-def possibility_of_propagation(p, max_of_validator, num_of_nodes, idx, ret_dict):
+def possibility_of_propagation(p, max_of_validator, num_of_nodes, idx, possibilities):
 
     print('Process {0}, P : {1}'.format(current_process(), p))
     results = list()
@@ -102,7 +102,7 @@ def possibility_of_propagation(p, max_of_validator, num_of_nodes, idx, ret_dict)
         results.append((1 - sum) * 100)
         # print('Possiblilty of propagation x = {0} y = {1}'.format(m, (1 - sum) * 100))
     print()
-    ret_dict[idx] = results.copy()
+    possibilities[idx] = results.copy()
     # ret_dict.append(results.copy())
     return results
 
@@ -157,6 +157,7 @@ if __name__=='__main__':
     plt.xlabel('Number of miners')
     plt.show()
     exit(0)
+
     # for idx in range(0, len(safeties)):
     #     sum =0
     #     for safety in safeties:
