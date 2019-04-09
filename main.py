@@ -180,13 +180,23 @@ def merge_by_propagtions(a_list, p_list):
 if __name__=='__main__':
 
     start_time = time.time()
-    n = 8954
-    # n = 100
+    n = int(input('Enter Number of nodes : '))
+    # n = 1000
     # rate of attacker
     a = 10
     # rate of propagation
-    p_list = [32, 60, 74, 80]
+    p_list = list()
+
+    while True:
+        answer = input('Enter percent of propagation (exit : enter): ')
+        if not answer:
+            break
+        p_list.append(int(answer))
     # p_list = [i for i in range(1,11)]
+
+    if len(p_list) == 0:
+        print('There is no percent of propagation.')
+        exit(1)
 
     max_of_validator = range(1, n + 1)
     plt.grid(True)
