@@ -97,7 +97,7 @@ def possibility_of_propagation(p, max_of_validator, num_of_nodes, idx, possibili
         sum = 0
         print('{0} of {1} processing in Propagation[{2}] \r'.format(m, max(max_of_validator),p),end='')
 
-        for i in range(max(math.ceil(m / 4), m-p*n), round(min(m, num_of_nodes * (1 - (p / 100))))+1):
+        for i in range(max(math.ceil(m / 4) + 1, m-p*n), round(min(m, num_of_nodes * (1 - (p / 100))))+1):
             x = x_values.get(m - i) if x_values.get(m - i) else ncr(round(num_of_nodes * p / 100), m - i)
             y = y_values.get(i) if y_values.get(i) else ncr(round(num_of_nodes * (1 - (p / 100))), i)
             z = z_values.get(m) if z_values.get(m) else ncr(num_of_nodes, m)
