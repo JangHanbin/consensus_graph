@@ -171,15 +171,14 @@ def merge_by_propagtions(a_list, p_list):
             if aver < 0 and aver > -1:
                 aver=0
             average.append(aver)
-
+        plt.plot(max_of_validator, average)
         excelSaver = ExcelSaver('total_safety_node[{0}]_propagation[{1}].xlsx'.format(max(max_of_validator), p))
         excelSaver.save_to_file(max_of_validator, average)
-
 
     return
 if __name__=='__main__':
 
-    start_time = time.time()
+
     n = int(input('Enter Number of nodes : '))
     # n = 1000
     # rate of attacker
@@ -198,6 +197,7 @@ if __name__=='__main__':
         print('There is no percent of propagation.')
         exit(1)
 
+    start_time = time.time()
     max_of_validator = range(1, n + 1)
     plt.grid(True)
     colors = ['#C80000', '#001EFF', '#FFE600', '#00C800']
@@ -215,7 +215,7 @@ if __name__=='__main__':
     for a, safety in safeties.items():
         # print('A : {0}, PERCENT : {1}'.format(a,safety[a-1]))
         # print(a, safety)
-        plt.plot(max_of_validator, safety, label='Atacker {0}%'.format(a))
+        # plt.plot(max_of_validator, safety, label='Atacker {0}%'.format(a))
         excelSaver = ExcelSaver('safety_node[{0}]_attacker[{1}].xlsx'.format(max(max_of_validator), a))
         excelSaver.save_to_file(max_of_validator, safety)
 
