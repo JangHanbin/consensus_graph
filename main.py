@@ -171,11 +171,18 @@ def merge_by_propagtions(a_list, p_list):
             if aver < 0 and aver > -1:
                 aver=0
             average.append(aver)
+        plt.plot(max(max_of_validator)*p / 100,average[round(max(max_of_validator)*p / 100)], marker='*', c='#C80000', ms=15)
+
+        plt.annotate('({0}, {1})'.format(round(max(max_of_validator)*p / 100), round(max(max_of_validator)*p / 100)),
+                     xy=(round(max(max_of_validator)*p / 100) ,average[round(max(max_of_validator)*p / 100)-1]))
+
         plt.plot(max_of_validator, average)
         excelSaver = ExcelSaver('total_safety_node[{0}]_propagation[{1}].xlsx'.format(max(max_of_validator), p))
         excelSaver.save_to_file(max_of_validator, average)
 
     return
+
+
 if __name__=='__main__':
 
 
