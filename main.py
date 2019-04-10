@@ -19,14 +19,16 @@ def ncr(n, r):
 
 def confirm(q, z):
     p = Decimal(1.0) - q
-    lam = z * (q / p)
+    # print(p, q)
+    lam = Decimal(z * (q / p))
+    # print(lam)
     sum = Decimal(1.0)
     for k in range(0, z+1):
         poisson = Decimal(math.exp(-lam))
         for i in range(1, k+1):
             poisson *= Decimal(lam / i)
         sum -= poisson * Decimal(1 - math.pow(q / p, z - k))
-        
+
     return (1 - sum) * 100
 
 
@@ -36,7 +38,7 @@ def safety_of_consensus(a, max_of_validator, num_of_nodes, safeties):
     y_values = dict()
     z_values = dict()
     # a = Decimal(a)
-    # print('Process {0}, A : {1}'.format(current_process(), a))
+    print('Process {0}, A : {1}'.format(current_process(), a))
     for m in max_of_validator:
         sum = Decimal(0)
         # print('{0} of {1} processing in Safety[{2}] \r'.format(m, max(max_of_validator), a), end='')
@@ -62,24 +64,11 @@ def safety_of_consensus(a, max_of_validator, num_of_nodes, safeties):
 
             result = Decimal(x) * Decimal(y) / Decimal(z)
             sum += result
-            # if m==8939 and a==75:
-            #     print('M : {0} I : {1}'.format(m,i))
-            #     print(round(m-(1-a/100)*n))
-            #     print(round(min(m, num_of_nodes * a / 100)) + 1)
-            #     # print(int(m-(1-a/100)*n))
-            #     # print(m - (1 - a / 100) * n)
-            #     print('{0} ncr {1} = {2}'.format(round(num_of_nodes * a / 100),i,x))
-            #     print('{0} ncr {1} = {2}'.format(round(num_of_nodes * (1 - (a / 100))), m-i, y))
-            #     print('{0} ncr {1} = {2}'.format(num_of_nodes, m, z))
-            #     print(sum)
-            #     print('\n\n')
+
 
         # insert by percentage of safety
         results.append((1- sum) * 100)
-        # print(sum)
-        # print(int((Decimal(1) - sum)))
-        # print((1 - sum) * 100)
-        # print('m[{0}] = {1},'.format(m,float((1- sum) * 100)))
+
     # print()
     safeties[a] = results.copy()
     return results
@@ -118,25 +107,41 @@ def possibility_of_propagation(p, max_of_validator, num_of_nodes, idx, possibili
 
 
 
-def compute_attacker_range(p_list, a):
+def compute_attacker_range(p_list):
     a_list=list()
 
     for p in p_list:
         tmp = list()
-        for i in range(100-p, min(100-p+a+1,100)):
+        a = 100-p
+        for i in range(a, min(a*2,100)+1):
             tmp.append(i)
         a_list.append(tmp)
 
+    # for p in p_list:
+    #     a_list.append(100-p)
     return a_list.copy()
 
 
 def compute_safeties_by_list(a_list, max_of_validator, n):
 
     safeties = Manager().dict()
+    #
+    # procs = list()
+    # for a in a_list:
+    #     proc = Process(target=safety_of_consensus, args=(a, max_of_validator, n, safeties))
+    #     procs.append(proc)
+    #     proc.start()
+    #
+    # for proc in procs:
+    #     proc.join()
+    #
+    # return safeties.copy()
 
     for a_ in a_list:
         procs = list()
+        # print(a_)
         for a in a_:
+
             proc = Process(target=safety_of_consensus, args=(a, max_of_validator, n, safeties))
             procs.append(proc)
             proc.start()
@@ -178,12 +183,9 @@ def merge_by_propagtions(a_list, p_list):
                      xy=(round(max(max_of_validator)*p / 100) ,average[round(max(max_of_validator)*p / 100)-1]))
         plt.plot(max_of_validator, average)
 
-        q = Decimal(1 - (average[round(max(max_of_validator)*p / 100)-1] / 100))
-        # print(q)
-        # q = Decimal(0.1)
+        # q = Decimal(1 - (average[round(max(max_of_validator)*p / 100)-1] / 100))
         # if q < 1:
         #     for z in range(0,100):
-        #         # print(confirm(q=q, z=z))
         #         if 99.97 < confirm(q=q, z=z):
         #             print('Propagation : {2} Z : {0} value = {1}'.format(z,confirm(q=q, z=z),p))
         #             break
@@ -200,7 +202,7 @@ if __name__=='__main__':
     n = int(input('Enter Number of nodes : '))
     # n = 1000
     # rate of attacker
-    a = 10
+    # a = 10
     # rate of propagation
     p_list = list()
 
@@ -226,16 +228,17 @@ if __name__=='__main__':
     # exit(0)
 
     # Safety
-    a_list = compute_attacker_range(p_list, a)
+    a_list = compute_attacker_range(p_list)
+    print(a_list)
     safeties = compute_safeties_by_list(a_list, max_of_validator, n)
 
     # SAVE AND DRAW VALUES
     for a, safety in safeties.items():
-        # print('A : {0}, PERCENT : {1}'.format(a,safety[a-1]))
         # print(a, safety)
         # plt.plot(max_of_validator, safety, label='Atacker {0}%'.format(a))
         excelSaver = ExcelSaver('safety_node[{0}]_attacker[{1}].xlsx'.format(max(max_of_validator), a))
         excelSaver.save_to_file(max_of_validator, safety)
+
 
 
     merge_by_propagtions(a_list, p_list)
