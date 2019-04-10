@@ -26,7 +26,7 @@ def confirm(q, z):
         for i in range(1, k+1):
             poisson *= Decimal(lam / i)
         sum -= poisson * Decimal(1 - math.pow(q / p, z - k))
-
+        
     return (1 - sum) * 100
 
 
@@ -39,7 +39,7 @@ def safety_of_consensus(a, max_of_validator, num_of_nodes, safeties):
     # print('Process {0}, A : {1}'.format(current_process(), a))
     for m in max_of_validator:
         sum = Decimal(0)
-        print('{0} of {1} processing in Safety[{2}] \r'.format(m, max(max_of_validator), a), end='')
+        # print('{0} of {1} processing in Safety[{2}] \r'.format(m, max(max_of_validator), a), end='')
         for i in range(max(math.ceil(m / 4), round(m-(1-a/100)*n)), round(min(m, num_of_nodes * a / 100)) + 1):
             # if there is a pre value then use that nor calculate
             # if is for avoid all kinda float calculate error
@@ -80,7 +80,7 @@ def safety_of_consensus(a, max_of_validator, num_of_nodes, safeties):
         # print(int((Decimal(1) - sum)))
         # print((1 - sum) * 100)
         # print('m[{0}] = {1},'.format(m,float((1- sum) * 100)))
-    print()
+    # print()
     safeties[a] = results.copy()
     return results
 
@@ -171,12 +171,23 @@ def merge_by_propagtions(a_list, p_list):
             if aver < 0 and aver > -1:
                 aver=0
             average.append(aver)
-        plt.plot(max(max_of_validator)*p / 100,average[round(max(max_of_validator)*p / 100)], marker='*', c='#C80000', ms=15)
 
-        plt.annotate('({0}, {1})'.format(round(max(max_of_validator)*p / 100), round(max(max_of_validator)*p / 100)),
+        # draw graph and star point
+        plt.plot(max(max_of_validator)*p / 100,average[round(max(max_of_validator)*p / 100)-1], marker='*', c='#C80000', ms=15)
+        plt.annotate('({0}, {1})'.format(round(max(max_of_validator)*p / 100), average[round(max(max_of_validator)*p / 100)-1]),
                      xy=(round(max(max_of_validator)*p / 100) ,average[round(max(max_of_validator)*p / 100)-1]))
-
         plt.plot(max_of_validator, average)
+
+        q = Decimal(1 - (average[round(max(max_of_validator)*p / 100)-1] / 100))
+        # print(q)
+        # q = Decimal(0.1)
+        # if q < 1:
+        #     for z in range(0,100):
+        #         # print(confirm(q=q, z=z))
+        #         if 99.97 < confirm(q=q, z=z):
+        #             print('Propagation : {2} Z : {0} value = {1}'.format(z,confirm(q=q, z=z),p))
+        #             break
+
         excelSaver = ExcelSaver('total_safety_node[{0}]_propagation[{1}].xlsx'.format(max(max_of_validator), p))
         excelSaver.save_to_file(max_of_validator, average)
 
