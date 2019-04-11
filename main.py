@@ -42,7 +42,7 @@ def safety_of_consensus(a, max_of_validator, num_of_nodes, safeties):
     for m in max_of_validator:
         sum = Decimal(0)
         # print('{0} of {1} processing in Safety[{2}] \r'.format(m, max(max_of_validator), a), end='')
-        for i in range(max(math.ceil(m / 4), round(m-(1-a/100)*n))+1, round(min(m, num_of_nodes * a / 100)) + 1):
+        for i in range(max(math.ceil(m +1/ 4), round(m-(1-a/100)*n)), round(min(m, num_of_nodes * a / 100)) + 1):
             # if there is a pre value then use that nor calculate
             # if is for avoid all kinda float calculate error
 
