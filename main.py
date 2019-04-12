@@ -42,7 +42,8 @@ def safety_of_consensus(a, max_of_validator, num_of_nodes, safeties):
     for m in max_of_validator:
         sum = Decimal(0)
         # print('{0} of {1} processing in Safety[{2}] \r'.format(m, max(max_of_validator), a), end='')
-        for i in range(max(math.ceil(m +1/ 4), round(m-(1-a/100)*n)), round(min(m, num_of_nodes * a / 100)) + 1):
+
+        for i in range(max(math.ceil((m +1)/ 4), round(m-(1-a/100)*n)), round(min(m, num_of_nodes * a / 100)) + 1):
             # if there is a pre value then use that nor calculate
             # if is for avoid all kinda float calculate error
 
@@ -81,12 +82,10 @@ def possibility_of_propagation(p, max_of_validator, num_of_nodes, idx, possibili
     x_values = dict()
     y_values = dict()
     z_values = dict()
-
     for m in max_of_validator:
         sum = 0
-        print('{0} of {1} processing in Propagation[{2}] \r'.format(m, max(max_of_validator),p),end='')
-
-        for i in range(max(math.ceil(m / 4) + 1, m-p*n), round(min(m, num_of_nodes * (1 - (p / 100))))+1):
+        # print('{0} of {1} processing in Propagation[{2}] \r'.format(m, max(max_of_validator),p),end='')
+        for i in range(max(math.ceil(m+1/ 4), m-p*n), round(min(m, num_of_nodes * (1 - (p / 100))))+1):
             x = x_values.get(m - i) if x_values.get(m - i) else ncr(round(num_of_nodes * p / 100), m - i)
             y = y_values.get(i) if y_values.get(i) else ncr(round(num_of_nodes * (1 - (p / 100))), i)
             z = z_values.get(m) if z_values.get(m) else ncr(num_of_nodes, m)
@@ -96,12 +95,12 @@ def possibility_of_propagation(p, max_of_validator, num_of_nodes, idx, possibili
 
             result = Decimal(x) * Decimal(y) / Decimal(z)
             sum += result
-
         # insert by percentage of possibility
         results.append((1 - sum) * 100)
-        # print('Possiblilty of propagation x = {0} y = {1}'.format(m, (1 - sum) * 100))
-    print()
+
+
     possibilities[idx] = results.copy()
+    print(possibilities)
     # ret_dict.append(results.copy())
     return results
 
@@ -109,16 +108,16 @@ def possibility_of_propagation(p, max_of_validator, num_of_nodes, idx, possibili
 
 def compute_attacker_range(p_list):
     a_list=list()
+    #
+    # for p in p_list:
+    #     tmp = list()
+    #     a = 100-p
+    #     for i in range(a, min(a*2,100)+1):
+    #         tmp.append(i)
+    #     a_list.append(tmp)
 
     for p in p_list:
-        tmp = list()
-        a = 100-p
-        for i in range(a, min(a*2,100)+1):
-            tmp.append(i)
-        a_list.append(tmp)
-
-    # for p in p_list:
-    #     a_list.append(100-p)
+        a_list.append(100-p)
     return a_list.copy()
 
 
@@ -126,29 +125,29 @@ def compute_safeties_by_list(a_list, max_of_validator, n):
 
     safeties = Manager().dict()
     #
-    # procs = list()
-    # for a in a_list:
-    #     proc = Process(target=safety_of_consensus, args=(a, max_of_validator, n, safeties))
-    #     procs.append(proc)
-    #     proc.start()
+    procs = list()
+    for a in a_list:
+        proc = Process(target=safety_of_consensus, args=(a, max_of_validator, n, safeties))
+        procs.append(proc)
+        proc.start()
+
+    for proc in procs:
+        proc.join()
+
+    return safeties.copy()
+
+    # for a_ in a_list:
+    #     procs = list()
+    #     # print(a_)
+    #     for a in a_:
     #
-    # for proc in procs:
-    #     proc.join()
+    #         proc = Process(target=safety_of_consensus, args=(a, max_of_validator, n, safeties))
+    #         procs.append(proc)
+    #         proc.start()
     #
-    # return safeties.copy()
-
-    for a_ in a_list:
-        procs = list()
-        # print(a_)
-        for a in a_:
-
-            proc = Process(target=safety_of_consensus, args=(a, max_of_validator, n, safeties))
-            procs.append(proc)
-            proc.start()
-
-        # wating for proc
-        for proc in procs:
-            proc.join()
+    #     # wating for proc
+    #     for proc in procs:
+    #         proc.join()
 
     return safeties.copy()
 
@@ -222,36 +221,32 @@ if __name__=='__main__':
     plt.grid(True)
     colors = ['#C80000', '#001EFF', '#FFE600', '#00C800']
 
-    # test = Manager().dict()
-    # safety_of_consensus(75, max_of_validator, n, Manager().dict())
-    # print(test)
-    # exit(0)
-
     # Safety
     a_list = compute_attacker_range(p_list)
-    print(a_list)
+    # print(a_list)
     safeties = compute_safeties_by_list(a_list, max_of_validator, n)
 
     # SAVE AND DRAW VALUES
     for a, safety in safeties.items():
         # print(a, safety)
-        # plt.plot(max_of_validator, safety, label='Atacker {0}%'.format(a))
+        plt.plot(max_of_validator, safety, label='Atacker {0}%'.format(a))
         excelSaver = ExcelSaver('safety_node[{0}]_attacker[{1}].xlsx'.format(max(max_of_validator), a))
         excelSaver.save_to_file(max_of_validator, safety)
 
 
 
-    merge_by_propagtions(a_list, p_list)
+    # merge_by_propagtions(a_list, p_list)
 
-    #
+
     # print(safeties)
     # for _a in zip(a_list):
     #     print(_a)
     #     for a, idx in zip(_a, range(0, len(a_list))):
     #         print(safeties[_a][idx])
+    #
     plt.ylabel('Safety [%]')
     plt.xlabel('Number of miners')
-    # plt.legend(loc=4)
+    plt.legend(loc=4)
     plt.show()
 
     end_time = time.time()
@@ -259,7 +254,7 @@ if __name__=='__main__':
     print('PROCESSING TIME : {0}'.format(end_time-start_time))
     exit(0)
 
-    # ######################### Dont necessary anymore #########################
+    ######################### Dont necessary anymore #########################
     # # propagation
     # possibilities=Manager().dict()
     # # plt.ylabel('Safety [%]')
@@ -277,36 +272,14 @@ if __name__=='__main__':
     #
     # # wating for proc
     # for proc in procs:
-    #     proc.join()    # Dont necessary anymore
-    #     # # propagation
-    #     # possibilities=Manager().dict()
-    #     # # plt.ylabel('Safety [%]')
-    #     # # plt.xlabel('Number of miners')
-    #     # procs = list()
-    #     #
-    #     # # for multiprocessing
-    #     # for idx, p in enumerate(p_list):
-    #     #     proc = Process(target=possibility_of_propagation, args=(p, max_of_validator, n, idx, possibilities))
-    #     #     procs.append(proc)
-    #     #     proc.start()
-    #     #
-    #     #     # possibility=possibility_of_propagation(p, max_of_validator, n)
-    #     #     # possibilities.append(possibility)
-    #     #
-    #     # # wating for proc
-    #     # for proc in procs:
-    #     #     proc.join()
+    #     proc.join()
     #
     #
-    #
-    #
-    # #     # draw propagation
-    # #     plt.plot(max_of_validator, possibility, c=colors[idx], label='{0}%'.format(p))
-    #
-    # # for idx, possibility in enumerate(possibilities) :
-    # #     plt.plot(max_of_validator, possibility, c=colors[idx], )
-    #
-    # # plt.plot(int(0.8*max(max_of_validator)),possibility[int(0.8*max(max_of_validator))],ms=15, c='#ffe600', marker='*')
+    # for idx, possibility in possibilities.items():
+    #     print(possibility)
+    #     plt.plot(max_of_validator, possibility, c=colors[idx], )
+
+    # plt.plot(int(0.8*max(max_of_validator)),possibility[int(0.8*max(max_of_validator))],ms=15, c='#ffe600', marker='*')
     #
     #
     # # Total result
