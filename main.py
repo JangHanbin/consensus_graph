@@ -118,19 +118,23 @@ def test_caluclate(a, max_of_validator, num_of_nodes, safeties):
     print('Process {0}, A : {1}'.format(current_process(), a))
 
     for m in max_of_validator:
+        # print('PLAIN M = {0}'.format(m))
         m = Decimal(m/max(max_of_validator))
         sum = Decimal(0)
         # print('{0} of {1} processing in Safety[{2}] \r'.format(m, max(max_of_validator), a), end='')
+
         # print('M = {0}'.format(m))
-        # print('RANGE {0} ~ {1}'.format(max(math.ceil(m*(num_of_nodes+1)/2),round((m-(a/100))*num_of_nodes )), round(min(m*num_of_nodes, (1-(a/100))*num_of_nodes))+1))
-        # print('MAX ( {0}, {1})'.format(math.ceil(m*(num_of_nodes+1)/2), round((m-(a/100))*num_of_nodes )))
+        # print('RANGE {0} ~ {1}'.format(math.ceil(m*(num_of_nodes)/2), round((m-Decimal(a/100))*num_of_nodes), round(min(m*num_of_nodes, Decimal(1-(a/100))*num_of_nodes))+1))
+        # print('MAX ( {0}, {1})'.format(math.ceil(m*(num_of_nodes)/2), round((m-Decimal(a/100))*num_of_nodes )))
         # print('MIN ({0}, {1})'.format(m*num_of_nodes,(1-(a/100))*num_of_nodes))
-        for i in range(max(math.ceil(m*(num_of_nodes+1)/2),round((m-Decimal(a/100))*num_of_nodes )), round(min(m*num_of_nodes, (1-(a/100))*num_of_nodes))+1):
+
+        for i in range(max(math.ceil(m*(num_of_nodes)/2),round((m-Decimal(a/100))*num_of_nodes )), round(min(m*num_of_nodes, Decimal(1-(a/100))*num_of_nodes))+1):
 
             if round(((1 - (a/100))*num_of_nodes)) < i:
                 print('escaped')
                 continue
             x = x_values.get(i) if x_values.get(i) else ncr(round(((1 - (a/100))*num_of_nodes)), i)
+            # print('X = {0}NCR{1}'.format(round(((1 - (a/100))*num_of_nodes)),i))
             x_values.update({i: x})
 
 
@@ -138,6 +142,7 @@ def test_caluclate(a, max_of_validator, num_of_nodes, safeties):
                 print('escaped')
                 continue
             y = y_values.get(m*num_of_nodes-i) if y_values.get(m*num_of_nodes-i) else ncr(round((a/100)*num_of_nodes), m*num_of_nodes-i)
+            # print('Y = {0}NCR{1}'.format(round((a/100)*num_of_nodes),m*num_of_nodes-i ))
             y_values.update({m*num_of_nodes-i: y})
 
 
@@ -145,6 +150,7 @@ def test_caluclate(a, max_of_validator, num_of_nodes, safeties):
                 print('escaped')
                 continue
             z = z_values.get(m*num_of_nodes) if z_values.get(m*num_of_nodes) else ncr(num_of_nodes, m*num_of_nodes)
+            # print('Z = {0}NCR{1}\n'.format(num_of_nodes,m*num_of_nodes))
             z_values.update({m*num_of_nodes: z})
 
 
@@ -153,7 +159,7 @@ def test_caluclate(a, max_of_validator, num_of_nodes, safeties):
 
 
         # insert by percentage of safety
-
+        # print('SUM = {0}'.format(sum))
         results.append((sum) * 100)
 
     # print()
@@ -305,7 +311,7 @@ if __name__=='__main__':
     # SAVE AND DRAW VALUES
     for a, safety in safeties.items():
         # print(a, safety)
-        plt.plot(max_of_validator, safety, label='Atacker {0}%'.format(a))
+        plt.plot(max_of_validator, safety, label='Propagation {0}%'.format(p))
         excelSaver = ExcelSaver('safety_node[{0}]_attacker[{1}].xlsx'.format(max(max_of_validator), a))
         excelSaver.save_to_file(max_of_validator, safety)
 
