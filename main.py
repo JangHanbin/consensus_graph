@@ -311,7 +311,7 @@ if __name__=='__main__':
     # SAVE AND DRAW VALUES
     for a, safety in safeties.items():
         # print(a, safety)
-        plt.plot(max_of_validator, safety, label='Propagation {0}%'.format(p))
+        plt.plot(max_of_validator, safety, label='Propagation {0}%'.format(min(100,100-a+25)))
         excelSaver = ExcelSaver('safety_node[{0}]_attacker[{1}].xlsx'.format(max(max_of_validator), a))
         excelSaver.save_to_file(max_of_validator, safety)
 
