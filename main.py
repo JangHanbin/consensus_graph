@@ -11,7 +11,10 @@ from xls_saver import ExcelSaver, ExcelReader
 getcontext().prec = 8
 
 def ncr(n, r):
-    r = min(r, n-r)
+    # n = Decimal(n)
+
+
+    r = int(min(r, n-r))
     numer = reduce(op.mul, range(n, n-r, -1), 1)
     denom = reduce(op.mul, range(1, r+1), 1)
 
@@ -106,18 +109,70 @@ def possibility_of_propagation(p, max_of_validator, num_of_nodes, idx, possibili
 
 
 
+def test_caluclate(a, max_of_validator, num_of_nodes, safeties):
+    results = list()
+    x_values = dict()
+    y_values = dict()
+    z_values = dict()
+    # a = Decimal(a)
+    print('Process {0}, A : {1}'.format(current_process(), a))
+
+    for m in max_of_validator:
+        m = Decimal(m/max(max_of_validator))
+        sum = Decimal(0)
+        # print('{0} of {1} processing in Safety[{2}] \r'.format(m, max(max_of_validator), a), end='')
+        # print('M = {0}'.format(m))
+        # print('RANGE {0} ~ {1}'.format(max(math.ceil(m*(num_of_nodes+1)/2),round((m-(a/100))*num_of_nodes )), round(min(m*num_of_nodes, (1-(a/100))*num_of_nodes))+1))
+        # print('MAX ( {0}, {1})'.format(math.ceil(m*(num_of_nodes+1)/2), round((m-(a/100))*num_of_nodes )))
+        # print('MIN ({0}, {1})'.format(m*num_of_nodes,(1-(a/100))*num_of_nodes))
+        for i in range(max(math.ceil(m*(num_of_nodes+1)/2),round((m-Decimal(a/100))*num_of_nodes )), round(min(m*num_of_nodes, (1-(a/100))*num_of_nodes))+1):
+
+            if round(((1 - (a/100))*num_of_nodes)) < i:
+                print('escaped')
+                continue
+            x = x_values.get(i) if x_values.get(i) else ncr(round(((1 - (a/100))*num_of_nodes)), i)
+            x_values.update({i: x})
+
+
+            if round((a/100)*num_of_nodes) < m*num_of_nodes-i:
+                print('escaped')
+                continue
+            y = y_values.get(m*num_of_nodes-i) if y_values.get(m*num_of_nodes-i) else ncr(round((a/100)*num_of_nodes), m*num_of_nodes-i)
+            y_values.update({m*num_of_nodes-i: y})
+
+
+            if num_of_nodes < m*num_of_nodes:
+                print('escaped')
+                continue
+            z = z_values.get(m*num_of_nodes) if z_values.get(m*num_of_nodes) else ncr(num_of_nodes, m*num_of_nodes)
+            z_values.update({m*num_of_nodes: z})
+
+
+            result = Decimal(x) * Decimal(y) / Decimal(z)
+            sum += result
+
+
+        # insert by percentage of safety
+
+        results.append((sum) * 100)
+
+    # print()
+    safeties[a] = results.copy()
+    return results
+
+
 def compute_attacker_range(p_list):
     a_list=list()
-    #
-    # for p in p_list:
-    #     tmp = list()
-    #     a = 100-p
-    #     for i in range(a, min(a*2,100)+1):
-    #         tmp.append(i)
-    #     a_list.append(tmp)
 
     for p in p_list:
-        a_list.append(100-p)
+        tmp = list()
+        a = 100-p
+        for i in range(a, min(a*2,100)+1):
+            tmp.append(i)
+        a_list.append(tmp)
+
+    # for p in p_list:
+    #     a_list.append(100-p)
     return a_list.copy()
 
 
@@ -126,8 +181,39 @@ def compute_safeties_by_list(a_list, max_of_validator, n):
     safeties = Manager().dict()
     #
     procs = list()
+    # for a in a_list:
+    #     proc = Process(target=safety_of_consensus, args=(a, max_of_validator, n, safeties))
+    #     procs.append(proc)
+    #     proc.start()
+    #
+    # for proc in procs:
+    #     proc.join()
+
+    # return safeties.copy()
+
+    for a_ in a_list:
+        procs = list()
+        # print(a_)
+        for a in a_:
+
+            proc = Process(target=safety_of_consensus, args=(a, max_of_validator, n, safeties))
+            procs.append(proc)
+            proc.start()
+
+        # wating for proc
+        for proc in procs:
+            proc.join()
+
+    return safeties.copy()
+
+
+def compute_test_safeteis_by_list(a_list, max_of_validator, n):
+
+    safeties = Manager().dict()
+    #
+    procs = list()
     for a in a_list:
-        proc = Process(target=safety_of_consensus, args=(a, max_of_validator, n, safeties))
+        proc = Process(target=test_caluclate, args=(a, max_of_validator, n, safeties))
         procs.append(proc)
         proc.start()
 
@@ -136,20 +222,7 @@ def compute_safeties_by_list(a_list, max_of_validator, n):
 
     return safeties.copy()
 
-    # for a_ in a_list:
-    #     procs = list()
-    #     # print(a_)
-    #     for a in a_:
-    #
-    #         proc = Process(target=safety_of_consensus, args=(a, max_of_validator, n, safeties))
-    #         procs.append(proc)
-    #         proc.start()
-    #
-    #     # wating for proc
-    #     for proc in procs:
-    #         proc.join()
 
-    return safeties.copy()
 
 
 def merge_by_propagtions(a_list, p_list):
@@ -201,7 +274,7 @@ if __name__=='__main__':
     n = int(input('Enter Number of nodes : '))
     # n = 1000
     # rate of attacker
-    # a = 10
+    a = 25
     # rate of propagation
     p_list = list()
 
@@ -222,9 +295,12 @@ if __name__=='__main__':
     colors = ['#C80000', '#001EFF', '#FFE600', '#00C800']
 
     # Safety
-    a_list = compute_attacker_range(p_list)
+    # a_list = compute_attacker_range(p_list)
     # print(a_list)
-    safeties = compute_safeties_by_list(a_list, max_of_validator, n)
+    # test_caluclate(25,max_of_validator,max(max_of_validator),)
+    # safeties = compute_safeties_by_list(a_list, max_of_validator, n)
+    a_list = [min(100,100-p+a) for p in p_list]
+    safeties = compute_test_safeteis_by_list(a_list,max_of_validator,n)
 
     # SAVE AND DRAW VALUES
     for a, safety in safeties.items():
