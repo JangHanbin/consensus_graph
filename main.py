@@ -7,6 +7,9 @@ from functools import reduce
 import time
 from xls_saver import ExcelSaver, ExcelReader
 
+from matplotlib.pyplot import figure
+figure(num=None, figsize=(9, 6), dpi=80, facecolor='w', edgecolor='k')
+
 
 getcontext().prec = 8
 
@@ -307,7 +310,7 @@ if __name__=='__main__':
     start_time = time.time()
     max_of_validator = range(1, n + 1)
     plt.grid(True)
-    colors = ['#C80000', '#001EFF', '#FFE600', '#00C800']
+    colors = ['#00C800','#001EFF', '#C80000', '#FFE600']
 
     # Safety
     # a_list = compute_attacker_range(p_list)
@@ -318,9 +321,12 @@ if __name__=='__main__':
     safeties = compute_test_safeteis_by_list(a_list,max_of_validator,n)
 
     # SAVE AND DRAW VALUES
-    for style , (a, safety) in enumerate(safeties.items()):
-        style = style % len(linestyles)
-        plt.plot(reduceGragh(max_of_validator), reduceGragh(safety), label='Propagation {0}%'.format(min(100,100-a+25)), ls = linestyles[style])
+    for idx , (a, safety) in enumerate(safeties.items()):
+        style = idx % len(linestyles)
+        color = idx % len(colors)
+
+        plt.plot(reduceGragh(max_of_validator), reduceGragh(safety), label='Propagation {0}%'.format(min(100,100-a+25)), ls = linestyles[style], linewidth=3.0, c=colors[color])
+        # plt.plot(max_of_validator, safety, label='Propagation {0}%'.format(min(100,100-a+25)), ls = linestyles[style])
         excelSaver = ExcelSaver('safety_node[{0}]_attacker[{1}].xlsx'.format(max(max_of_validator), a))
         excelSaver.save_to_file(max_of_validator, safety)
 
@@ -335,9 +341,9 @@ if __name__=='__main__':
     #     for a, idx in zip(_a, range(0, len(a_list))):
     #         print(safeties[_a][idx])
     #
-    plt.ylabel('Safety [%]')
-    plt.xlabel('Number of miners')
-    plt.legend(loc=4)
+    plt.ylabel('Safety [%]',fontsize=20)
+    plt.xlabel('Number of miners',fontsize=20)
+    plt.legend(loc=7)
     plt.show()
 
     end_time = time.time()
