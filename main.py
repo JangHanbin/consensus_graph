@@ -273,6 +273,14 @@ def merge_by_propagtions(a_list, p_list):
 
     return
 
+def reduceGragh(target):
+    return_list=list()
+    for idx, e in enumerate(target):
+        if idx%4==0:
+            return_list.append(e)
+
+
+    return return_list.copy()
 
 if __name__=='__main__':
 
@@ -283,7 +291,7 @@ if __name__=='__main__':
     a = 25
     # rate of propagation
     p_list = list()
-    linestyles=['-','--','-.',':']
+    linestyles=[':','--','-','-.']
 
     while True:
         answer = input('Enter percent of propagation (exit : enter): ')
@@ -312,7 +320,7 @@ if __name__=='__main__':
     # SAVE AND DRAW VALUES
     for style , (a, safety) in enumerate(safeties.items()):
         style = style % len(linestyles)
-        plt.plot(max_of_validator, safety, label='Propagation {0}%'.format(min(100,100-a+25)), ls = linestyles[style])
+        plt.plot(reduceGragh(max_of_validator), reduceGragh(safety), label='Propagation {0}%'.format(min(100,100-a+25)), ls = linestyles[style])
         excelSaver = ExcelSaver('safety_node[{0}]_attacker[{1}].xlsx'.format(max(max_of_validator), a))
         excelSaver.save_to_file(max_of_validator, safety)
 
