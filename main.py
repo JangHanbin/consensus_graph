@@ -324,9 +324,10 @@ if __name__=='__main__':
     for idx , (a, safety) in enumerate(safeties.items()):
         style = idx % len(linestyles)
         color = idx % len(colors)
+        p = min(100,100-a+25)
 
-        plt.plot(reduceGragh(max_of_validator), reduceGragh(safety), label='Propagation {0}%'.format(min(100,100-a+25)), ls = linestyles[style], linewidth=3.0, c=colors[color])
-        # plt.plot(max_of_validator, safety, label='Propagation {0}%'.format(min(100,100-a+25)), ls = linestyles[style])
+        plt.plot(reduceGragh(max_of_validator), reduceGragh(safety), label='Propagation {0}%'.format(p), ls = linestyles[style], linewidth=3.0, c=colors[color])
+
         excelSaver = ExcelSaver('safety_node[{0}]_attacker[{1}].xlsx'.format(max(max_of_validator), a))
         excelSaver.save_to_file(max_of_validator, safety)
 
@@ -343,7 +344,9 @@ if __name__=='__main__':
     #
     plt.ylabel('Safety [%]',fontsize=20)
     plt.xlabel('Number of miners',fontsize=20)
-    plt.legend(loc=7)
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
+    plt.legend(loc=7, prop={'size':13})
     plt.show()
 
     end_time = time.time()
