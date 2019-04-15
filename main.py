@@ -283,6 +283,7 @@ if __name__=='__main__':
     a = 25
     # rate of propagation
     p_list = list()
+    linestyles=['-','--','-.',':']
 
     while True:
         answer = input('Enter percent of propagation (exit : enter): ')
@@ -309,9 +310,9 @@ if __name__=='__main__':
     safeties = compute_test_safeteis_by_list(a_list,max_of_validator,n)
 
     # SAVE AND DRAW VALUES
-    for a, safety in safeties.items():
-        # print(a, safety)
-        plt.plot(max_of_validator, safety, label='Propagation {0}%'.format(min(100,100-a+25)))
+    for style , (a, safety) in enumerate(safeties.items()):
+        style = style % len(linestyles)
+        plt.plot(max_of_validator, safety, label='Propagation {0}%'.format(min(100,100-a+25)), ls = linestyles[style])
         excelSaver = ExcelSaver('safety_node[{0}]_attacker[{1}].xlsx'.format(max(max_of_validator), a))
         excelSaver.save_to_file(max_of_validator, safety)
 
