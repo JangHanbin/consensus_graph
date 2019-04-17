@@ -342,6 +342,7 @@ if __name__=='__main__':
     #     for a, idx in zip(_a, range(0, len(a_list))):
     #         print(safeties[_a][idx])
     #
+    plt.ylim(0,105)
     plt.ylabel('Safety [%]',fontsize=20)
     plt.xlabel('Number of miners',fontsize=20)
     plt.xticks(fontsize=15)
