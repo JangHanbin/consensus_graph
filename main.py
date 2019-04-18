@@ -340,7 +340,7 @@ if __name__=='__main__':
             color = idx % len(colors)
 
             p = p_list[idx]
-            plt.plot(reduceGragh(max_of_validator), [i/100 for i in reduceGragh(safety)], label='Prop. rate {0}%'.format(p), ls = linestyles[style], linewidth=3.0, c=colors[color])
+            plt.plot(reduceGragh(max_of_validator), [i/100 for i in reduceGragh(safety)], label='Propagation rate {0}%'.format(p), ls = linestyles[style], linewidth=3.0, c=colors[color])
 
             # excelSaver = ExcelSaver('safety_node[{0}]_attacker[{1}].xlsx'.format(max(max_of_validator), a))
             # excelSaver.save_to_file(max_of_validator, safety)
@@ -351,7 +351,7 @@ if __name__=='__main__':
         plt.xlabel('Number of miners', fontsize=30)
         plt.xticks(fontsize=25)
         plt.yticks(fontsize=25)
-        plt.legend(prop={'size': 20})
+        plt.legend(loc=4, prop={'size': 24})
         plt.savefig('{2}_Propagation rate {0}_attacker_{1}.eps'.format(p_list, origin_a,max(max_of_validator)), format='eps', dpi=1500)
         plt.clf()
 
