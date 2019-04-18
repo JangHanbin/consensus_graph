@@ -301,7 +301,8 @@ if __name__=='__main__':
         a_inputs.append(int(answer))
     # rate of propagation
     p_list = list()
-    linestyles=[':','--','-.','-']
+    # linestyles=[':','--','-.','-']
+    linestyles=[':','--','-']
 
     while True:
         answer = input('Enter percent of propagation (exit : enter): ')
@@ -317,8 +318,8 @@ if __name__=='__main__':
     start_time = time.time()
     max_of_validator = range(1, n + 1)
     plt.grid(True)
-    colors = ['#00C800','#001EFF', '#FF7F00','#C80000']
-
+    # colors = ['#00C800','#001EFF', '#FF7F00','#C80000']
+    colors = ['#00C800','#001EFF', '#C80000']
     p_list.sort()
 
     # Safety
@@ -333,14 +334,12 @@ if __name__=='__main__':
         print('ORIGIN A : {0}'.format(origin_a))
         safeties = compute_test_safeteis_by_list(a_list,max_of_validator,n)
         # SAVE AND DRAW VALUES
-        for idx , (a, safety) in enumerate(safeties.items()):
+        for idx, safety in safeties.items():
 
             style = idx % len(linestyles)
             color = idx % len(colors)
 
-            p = p_list[a]
-            print('A = {0}, P = {1}'.format(a,p))
-
+            p = p_list[idx]
             plt.plot(reduceGragh(max_of_validator), [i/100 for i in reduceGragh(safety)], label='Prop. rate {0}%'.format(p), ls = linestyles[style], linewidth=3.0, c=colors[color])
 
             # excelSaver = ExcelSaver('safety_node[{0}]_attacker[{1}].xlsx'.format(max(max_of_validator), a))
