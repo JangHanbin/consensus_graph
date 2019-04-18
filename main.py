@@ -291,7 +291,14 @@ if __name__=='__main__':
     n = int(input('Enter Number of nodes : '))
     # n = 1000
     # rate of attacker
-    a = 25
+    # a = 25
+    a_inputs = list()
+
+    while True:
+        answer = input('Enter percent of Attacker (exit : enter): ')
+        if not answer:
+            break
+        a_inputs.append(int(answer))
     # rate of propagation
     p_list = list()
     linestyles=[':','--','-','-.']
@@ -310,29 +317,39 @@ if __name__=='__main__':
     start_time = time.time()
     max_of_validator = range(1, n + 1)
     plt.grid(True)
-    colors = ['#00C800','#001EFF', '#C80000', '#FFE600']
+    colors = ['#00C800','#001EFF', '#C80000', '#FF7F00']
+
+
 
     # Safety
     # a_list = compute_attacker_range(p_list)
     # print(a_list)
     # test_caluclate(25,max_of_validator,max(max_of_validator),)
     # safeties = compute_safeties_by_list(a_list, max_of_validator, n)
-    a_list = [min(100,100-p+a) for p in p_list]
-    safeties = compute_test_safeteis_by_list(a_list,max_of_validator,n)
+    for a in a_inputs:
+        origin_a = a
+        a_list = [min(100,100-p+a) for p in p_list]
+        safeties = compute_test_safeteis_by_list(a_list,max_of_validator,n)
 
-    # SAVE AND DRAW VALUES
-    for idx , (a, safety) in enumerate(safeties.items()):
-        style = idx % len(linestyles)
-        color = idx % len(colors)
-        p = min(100,100-a+25)
+        # SAVE AND DRAW VALUES
+        for idx , (a, safety) in enumerate(safeties.items()):
+            style = idx % len(linestyles)
+            color = idx % len(colors)
+            p = min(100,100-a+25)
 
+            plt.plot(reduceGragh(max_of_validator), [i/100 for i in reduceGragh(safety)], label='Prop. rate {0}%'.format(p), ls = linestyles[style], linewidth=3.0, c=colors[color])
 
-        plt.plot(reduceGragh(max_of_validator), [i/100 for i in reduceGragh(safety)], label='Propagation {0}%'.format(p), ls = linestyles[style], linewidth=3.0, c=colors[color])
+            excelSaver = ExcelSaver('safety_node[{0}]_attacker[{1}].xlsx'.format(max(max_of_validator), a))
+            excelSaver.save_to_file(max_of_validator, safety)
 
-        excelSaver = ExcelSaver('safety_node[{0}]_attacker[{1}].xlsx'.format(max(max_of_validator), a))
-        excelSaver.save_to_file(max_of_validator, safety)
-
-
+        plt.ylim(0, 1.1)
+        plt.ylabel('P(n, m, $\\alpha$)', fontsize=30)
+        plt.xlabel('Number of miners', fontsize=30)
+        plt.xticks(fontsize=25)
+        plt.yticks(fontsize=25)
+        plt.legend(prop={'size': 20})
+        plt.savefig('{2}_Propagation rate {0}_attacker_{1}.eps'.format(p_list, origin_a,max(max_of_validator)), format='eps', dpi=1200)
+        plt.clf()
 
     # merge_by_propagtions(a_list, p_list)
 
@@ -343,12 +360,7 @@ if __name__=='__main__':
     #     for a, idx in zip(_a, range(0, len(a_list))):
     #         print(safeties[_a][idx])
     #
-    plt.ylim(0,1.1)
-    plt.ylabel('Safety [%]',fontsize=20)
-    plt.xlabel('Number of miners',fontsize=20)
-    plt.xticks(fontsize=15)
-    plt.yticks(fontsize=15)
-    plt.legend(loc=7, prop={'size':13})
+
     plt.show()
 
     end_time = time.time()
