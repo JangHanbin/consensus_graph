@@ -112,7 +112,7 @@ def possibility_of_propagation(p, max_of_validator, num_of_nodes, idx, possibili
 
 
 
-def test_caluclate(a, max_of_validator, num_of_nodes, safeties):
+def test_caluclate(a, max_of_validator, num_of_nodes, safeties,idx):
     results = list()
     x_values = dict()
     y_values = dict()
@@ -166,7 +166,7 @@ def test_caluclate(a, max_of_validator, num_of_nodes, safeties):
         results.append((sum) * 100)
 
     # print()
-    safeties[a] = results.copy()
+    safeties[idx] = results.copy()
     return results
 
 
@@ -221,8 +221,8 @@ def compute_test_safeteis_by_list(a_list, max_of_validator, n):
     safeties = Manager().dict()
     #
     procs = list()
-    for a in a_list:
-        proc = Process(target=test_caluclate, args=(a, max_of_validator, n, safeties))
+    for idx, a in enumerate(a_list):
+        proc = Process(target=test_caluclate, args=(a, max_of_validator, n, safeties,idx))
         procs.append(proc)
         proc.start()
 
@@ -301,7 +301,7 @@ if __name__=='__main__':
         a_inputs.append(int(answer))
     # rate of propagation
     p_list = list()
-    linestyles=[':','--','-','-.']
+    linestyles=[':','--','-.','-']
 
     while True:
         answer = input('Enter percent of propagation (exit : enter): ')
@@ -317,9 +317,9 @@ if __name__=='__main__':
     start_time = time.time()
     max_of_validator = range(1, n + 1)
     plt.grid(True)
-    colors = ['#00C800','#001EFF', '#C80000', '#FF7F00']
+    colors = ['#00C800','#001EFF', '#FF7F00','#C80000']
 
-
+    p_list.sort()
 
     # Safety
     # a_list = compute_attacker_range(p_list)
@@ -329,18 +329,22 @@ if __name__=='__main__':
     for a in a_inputs:
         origin_a = a
         a_list = [min(100,100-p+a) for p in p_list]
+        print(a_list)
+        print('ORIGIN A : {0}'.format(origin_a))
         safeties = compute_test_safeteis_by_list(a_list,max_of_validator,n)
-
         # SAVE AND DRAW VALUES
         for idx , (a, safety) in enumerate(safeties.items()):
+
             style = idx % len(linestyles)
             color = idx % len(colors)
-            p = min(100,100-a+25)
+
+            p = p_list[a]
+            print('A = {0}, P = {1}'.format(a,p))
 
             plt.plot(reduceGragh(max_of_validator), [i/100 for i in reduceGragh(safety)], label='Prop. rate {0}%'.format(p), ls = linestyles[style], linewidth=3.0, c=colors[color])
 
-            excelSaver = ExcelSaver('safety_node[{0}]_attacker[{1}].xlsx'.format(max(max_of_validator), a))
-            excelSaver.save_to_file(max_of_validator, safety)
+            # excelSaver = ExcelSaver('safety_node[{0}]_attacker[{1}].xlsx'.format(max(max_of_validator), a))
+            # excelSaver.save_to_file(max_of_validator, safety)
 
         plt.ylim(0, 1.1)
         plt.ylabel('P(n, m, $\\alpha$)', fontsize=30)
