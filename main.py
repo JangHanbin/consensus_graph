@@ -317,7 +317,7 @@ if __name__=='__main__':
 
     start_time = time.time()
     max_of_validator = range(1, n + 1)
-    plt.grid(True)
+
     # colors = ['#00C800','#001EFF', '#FF7F00','#C80000']
     colors = ['#00C800','#001EFF', '#C80000']
     p_list.sort()
@@ -346,6 +346,7 @@ if __name__=='__main__':
             # excelSaver.save_to_file(max_of_validator, safety)
 
         plt.ylim(0, 1.1)
+        plt.grid(True)
         plt.ylabel('P(n, m, $\\alpha$)', fontsize=30)
         plt.xlabel('Number of miners', fontsize=30)
         plt.xticks(fontsize=25)
@@ -353,6 +354,7 @@ if __name__=='__main__':
         plt.legend(prop={'size': 20})
         plt.savefig('{2}_Propagation rate {0}_attacker_{1}.eps'.format(p_list, origin_a,max(max_of_validator)), format='eps', dpi=1500)
         plt.clf()
+
 
     # merge_by_propagtions(a_list, p_list)
 
