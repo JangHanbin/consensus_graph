@@ -8,7 +8,7 @@ import time
 from xls_saver import ExcelSaver, ExcelReader
 
 from matplotlib.pyplot import figure
-figure(num=None, figsize=(9, 6), dpi=80, facecolor='w', edgecolor='k')
+figure(num=None, figsize=(11, 7.8), dpi=80, facecolor='w', edgecolor='k')
 
 
 getcontext().prec = 8
@@ -348,7 +348,7 @@ if __name__=='__main__':
         plt.xticks(fontsize=25)
         plt.yticks(fontsize=25)
         plt.legend(prop={'size': 20})
-        plt.savefig('{2}_Propagation rate {0}_attacker_{1}.eps'.format(p_list, origin_a,max(max_of_validator)), format='eps', dpi=1200)
+        plt.savefig('{2}_Propagation rate {0}_attacker_{1}.eps'.format(p_list, origin_a,max(max_of_validator)), format='eps', dpi=1500)
         plt.clf()
 
     # merge_by_propagtions(a_list, p_list)
