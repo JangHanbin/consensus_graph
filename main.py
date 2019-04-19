@@ -348,7 +348,7 @@ if __name__=='__main__':
         plt.ylim(0, 1.1)
         plt.grid(True)
         plt.ylabel('P(n, m, $\\alpha$)', fontsize=30)
-        plt.xlabel('Number of miners', fontsize=30)
+        plt.xlabel('$m$', fontsize=30)
         plt.xticks(fontsize=25)
         plt.yticks(fontsize=25)
         plt.legend(loc=4, prop={'size': 24})
