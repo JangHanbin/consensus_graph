@@ -126,12 +126,12 @@ def test_caluclate(a, max_of_validator, num_of_nodes, safeties,idx):
         sum = Decimal(0)
         # print('{0} of {1} processing in Safety[{2}] \r'.format(m, max(max_of_validator), a), end='')
 
-        # print('M = {0}'.format(m))
-        # print('RANGE {0} ~ {1}'.format(math.ceil(m*(num_of_nodes)/2), round((m-Decimal(a/100))*num_of_nodes), round(min(m*num_of_nodes, Decimal(1-(a/100))*num_of_nodes))+1))
-        # print('MAX ( {0}, {1})'.format(math.ceil(m*(num_of_nodes)/2), round((m-Decimal(a/100))*num_of_nodes )))
-        # print('MIN ({0}, {1})'.format(m*num_of_nodes,(1-(a/100))*num_of_nodes))
+        print('M = {0}'.format(m))
+        print('RANGE {0} ~ {1}'.format(math.ceil(m*(num_of_nodes)/2), round((m-Decimal(a/100))*num_of_nodes), round(min(m*num_of_nodes, Decimal(1-(a/100))*num_of_nodes))+1))
+        print('MAX ( {0}, {1})'.format(math.ceil(m*(num_of_nodes)/2), round((m-Decimal(a/100))*num_of_nodes )))
+        print('MIN ({0}, {1})'.format(m*num_of_nodes,(1-(a/100))*num_of_nodes))
 
-        for i in range(max(math.ceil((m+1)*(num_of_nodes)/2),round((m-Decimal(a/100))*num_of_nodes )), round(min(m*num_of_nodes, Decimal(1-(a/100))*num_of_nodes))+1):
+        for i in range(max(math.ceil(((m*num_of_nodes)+1)/2),round((m-Decimal(a/100))*num_of_nodes )), round(min(m*num_of_nodes, Decimal(1-(a/100))*num_of_nodes))+1):
 
             if round(((1 - (a/100))*num_of_nodes)) < i:
                 print('escaped')
